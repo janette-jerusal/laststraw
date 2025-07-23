@@ -50,19 +50,23 @@ namespace UserStorySimilarityAddIn
 
         private List<(string id, string text)> ReadStoriesFromFile(string path)
         {
-            var excelApp = new Excel.Application();
+            var excelApp = new Microsoft.Office.Interop.Excel.Application();
             var workbook = excelApp.Workbooks.Open(path);
-            var sheet = (Excel.Worksheet)workbook.Sheets[1];
-            var range = sheet.UsedRange;
+            Excel.Worksheet sheet = (Excel.Worksheet)workbook.Sheets[1];
+            Excel.Range range = sheet.UsedRange;
 
             var stories = new List<(string id, string text)>();
 
             for (int i = 2; i <= range.Rows.Count; i++) // assumes row 1 is headers
             {
-                string id = Convert.ToString(((Excel.Range)range.Cells[i, 1]).Value2);
-                string text = Convert.ToString(((Excel.Range)range.Cells[i, 2]).Value2);
+                var cellId = ((Excel.Range)range.Cells[i, 1])?.Value2;
+                var cellText = ((Excel.Range)range.Cells[i, 2])?.Value2;
+
+                string id = Convert.ToString(cellId);
+                string text = Convert.ToString(cellText);
+
                 if (!string.IsNullOrWhiteSpace(id) && !string.IsNullOrWhiteSpace(text))
-                    stories.Add((id, text));
+                    stories.Add((id.Trim(), text.Trim()));
             }
 
             workbook.Close(false);
@@ -74,7 +78,7 @@ namespace UserStorySimilarityAddIn
             List<(string id, string text)> list1,
             List<(string id, string text)> list2)
         {
-            var results = new List<(string, string, string, string, double)>();
+            var results = new List<(string id1, string text1, string id2, string text2, double similarity)>();
 
             foreach (var (id1, text1) in list1)
             {
@@ -138,4 +142,3 @@ namespace UserStorySimilarityAddIn
         }
     }
 }
-
